@@ -1,0 +1,21 @@
+### get all users
+GET {{BASE_URL}}/user
+
+### create user
+POST {{BASE_URL}}/user
+Content-Type: application/json
+{
+  "email":"code2@gmail.com",
+  "name":"Pojok Code"
+}
+
+### update user
+PUT {{BASE_URL}}/user/6
+Content-Type: application/json
+{
+  "email":"code2@gmail.com",
+  "name":"Pojok Code"
+}
+
+### delete user
+DELETE {{BASE_URL}}/user/3
