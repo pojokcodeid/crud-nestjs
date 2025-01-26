@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto } from 'src/user/user.dto';
 import { User } from '@prisma/client';
@@ -12,7 +12,8 @@ export class UserService {
    * @returns A promise that resolves to an array of users.
    */
   async findAll(): Promise<User[]> {
-    return await this.prisma.user.findMany();
+    const users = await this.prisma.user.findMany();
+    return users.map((user) => ({ ...user, password: 'xxxxxxxxxxx' }));
   }
 
   /**
@@ -21,7 +22,9 @@ export class UserService {
    * @returns The user object if found, or null if not found.
    */
   async findById(id: number): Promise<User | null> {
-    return await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) return null;
+    return { ...user, password: 'xxxxxxxxxxx' };
   }
 
   /**
@@ -49,19 +52,20 @@ export class UserService {
    * @returns updated user
    */
   async update(id: number, data: UpdateUserDto): Promise<User> {
+    const user = await this.prisma.user.update({ where: { id }, data });
+    return { ...user, password: 'xxxxxxxxxxx' };
+  }
+
+  async updatNoPassword(id: number, data: UpdateUserDto): Promise<User> {
     // check email exists or not
-    const exists = await this.findByEmail(data.email as string);
-    if (exists && exists.id !== id) {
-      throw new HttpException(
-        {
-          message: ['Email already exists'],
-          error: 'Bad Request',
-          statusCode: 400,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-    return await this.prisma.user.update({ where: { id }, data });
+    const user = await this.prisma.user.update({
+      where: { id },
+      data: {
+        email: data.email,
+        name: data.name,
+      },
+    });
+    return { ...user, password: 'xxxxxxxxxxx' };
   }
 
   /**
@@ -70,17 +74,8 @@ export class UserService {
    * @returns The deleted user.
    */
   async delete(id: number): Promise<User> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new HttpException(
-        {
-          message: ['User not found'],
-          error: 'Not Found',
-          statusCode: 404,
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return await this.prisma.user.delete({ where: { id } });
+    return await this.prisma.user
+      .delete({ where: { id } })
+      .then((user) => ({ ...user, password: 'xxxxxxxxxxx' }));
   }
 }

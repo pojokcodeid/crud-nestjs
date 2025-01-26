@@ -1,21 +1,34 @@
 ### get all users
 GET {{BASE_URL}}/user
 
+### get user by id
+GET {{BASE_URL}}/user/1
+
 ### create user
 POST {{BASE_URL}}/user
 Content-Type: application/json
 {
-  "email":"code2@gmail.com",
-  "name":"Pojok Code"
+  "email":"codex@gmail.com",
+  "name":"Pojok Code",
+  "password":"Pass123"
 }
 
 ### update user
-PUT {{BASE_URL}}/user/6
+PUT {{BASE_URL}}/user/7
 Content-Type: application/json
 {
   "email":"code@gmail.com",
-  "name":"Pojok Code"
+  "name":"Pojok Code",
+  "password":"Pass123"
 }
 
 ### delete user
-DELETE {{BASE_URL}}/user/3
+DELETE {{BASE_URL}}/user/2
+
+### user login
+POST {{BASE_URL}}/user/login
+Content-Type: application/json
+{
+  "email":"code@gmail.com",
+  "password":"Pass123"
+}

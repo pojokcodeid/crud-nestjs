@@ -4,6 +4,8 @@ import {
   Delete,
   Get,
   HttpCode,
+  HttpException,
+  HttpStatus,
   Logger,
   Param,
   ParseIntPipe,
@@ -11,7 +13,8 @@ import {
   Put,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto } from 'src/user/user.dto';
+import { CreateUserDto, LoginUserDto, UpdateUserDto } from 'src/user/user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Controller('user')
 export class UserController {
@@ -20,6 +23,34 @@ export class UserController {
     private readonly logger: Logger,
   ) {}
 
+  private userCheck = async (id: number) => {
+    const user = await this.userService.findById(id);
+    if (!user) {
+      throw new HttpException(
+        {
+          message: ['User not found'],
+          error: 'Not Found',
+          statusCode: 404,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  };
+
+  private userEmailCheck = async (id: number, email: string) => {
+    const exists = await this.userService.findByEmail(email);
+    if (exists && exists.id !== id) {
+      console.log(exists, id);
+      throw new HttpException(
+        {
+          message: ['Email already exists'],
+          error: 'Bad Request',
+          statusCode: 400,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  };
   /**
    * Retrieves all user data.
    * @returns A promise that resolves to a list of users.
@@ -63,6 +94,7 @@ export class UserController {
     //   throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     // }
     try {
+      body.password = bcrypt.hashSync(body.password, 10);
       const data = await this.userService.create(body);
       return {
         data,
@@ -82,11 +114,20 @@ export class UserController {
   async update(
     @Param('id', ParseIntPipe)
     id: number,
-    @Body() body: { email?: string; name?: string },
+    @Body() body: UpdateUserDto,
   ) {
+    await this.userCheck(id);
+    await this.userEmailCheck(id, body.email as string);
     try {
+      let user = {};
+      if (body.password) {
+        body.password = bcrypt.hashSync(body.password, 10);
+        user = await this.userService.update(id, body);
+      } else {
+        user = await this.userService.updatNoPassword(id, body);
+      }
       return {
-        data: await this.userService.update(id, body),
+        data: user,
       };
     } catch (error) {
       this.logger.error(error);
@@ -101,12 +142,43 @@ export class UserController {
   @Delete('/:id')
   @HttpCode(200)
   async delete(@Param('id', ParseIntPipe) id: number) {
+    await this.userCheck(id);
     try {
       return {
         data: await this.userService.delete(id),
       };
     } catch (error) {
       this.logger.error(error);
+    }
+  }
+
+  @Post('/login')
+  @HttpCode(200)
+  async login(@Body() body: LoginUserDto) {
+    const user = await this.userService.findByEmail(body.email);
+    if (!user) {
+      throw new HttpException(
+        {
+          message: ['User not found'],
+          error: 'Not Found',
+          statusCode: 404,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    if (bcrypt.compareSync(body.password, user.password as string)) {
+      return {
+        data: { ...user, password: 'xxxxxxxxxxx' },
+      };
+    } else {
+      throw new HttpException(
+        {
+          message: ['Invalid credentials'],
+          error: 'Unauthorized',
+          statusCode: 401,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }
