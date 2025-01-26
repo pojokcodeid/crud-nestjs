@@ -70,6 +70,7 @@ export class UserController {
     try {
       const data = await this.userService.findAll();
       res.status(200).json({
+        message: 'Get Success',
         data: data,
       });
     } catch (error: unknown) {
@@ -85,6 +86,7 @@ export class UserController {
     try {
       const data = await this.userService.findById(id);
       return {
+        message: 'Get Success',
         data,
       };
     } catch (error) {
@@ -108,6 +110,7 @@ export class UserController {
       body.password = bcrypt.hashSync(body.password, 10);
       const data = await this.userService.create(body);
       return {
+        message: 'Create Success',
         data,
       };
     } catch (error) {
@@ -138,6 +141,7 @@ export class UserController {
         user = await this.userService.updatNoPassword(id, body);
       }
       return {
+        message: 'Update Success',
         data: user,
       };
     } catch (error) {
@@ -154,9 +158,11 @@ export class UserController {
   @HttpCode(200)
   async delete(@Param('id', ParseIntPipe) id: number) {
     await this.userCheck(id);
+    const user = await this.userService.delete(id);
     try {
       return {
-        data: await this.userService.delete(id),
+        message: 'Delete Success',
+        data: user,
       };
     } catch (error) {
       this.logger.error(error);
@@ -166,6 +172,10 @@ export class UserController {
   @Post('/login')
   @HttpCode(200)
   async login(@Body() body: LoginUserDto) {
-    return await this.userService.verifyUser(body.email, body.password);
+    const user = await this.userService.verifyUser(body.email, body.password);
+    return {
+      message: 'Login Success',
+      data: user,
+    };
   }
 }

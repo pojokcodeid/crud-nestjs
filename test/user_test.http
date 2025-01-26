@@ -10,13 +10,13 @@ Authorization: Bearer {{$global.accessToken}}
 POST {{BASE_URL}}/user
 Content-Type: application/json
 {
-  "email":"codex@gmail.com",
+  "email":"codexxx@gmail.com",
   "name":"Pojok Code",
   "password":"Pass123"
 }
 
 ### update user
-PUT {{BASE_URL}}/user/7
+PUT {{BASE_URL}}/user/1
 Content-Type: application/json
 {
   "email":"code@gmail.com",
@@ -25,7 +25,7 @@ Content-Type: application/json
 }
 
 ### delete user
-DELETE {{BASE_URL}}/user/2
+DELETE {{BASE_URL}}/user/50
 
 ### user login
 POST {{BASE_URL}}/user/login
@@ -36,5 +36,5 @@ Content-Type: application/json
 }
 
 {{
-  $global.accessToken=JSON.parse(response.body).token;
+  $global.accessToken=JSON.parse(response.body).data.token;
 }}

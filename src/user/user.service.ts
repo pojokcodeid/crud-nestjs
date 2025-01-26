@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto, UpdateUserDto, UserWithToken } from 'src/user/user.dto';
 import { User } from '@prisma/client';
@@ -47,7 +47,9 @@ export class UserService {
    * @returns The created user.
    */
   async create(data: CreateUserDto): Promise<User> {
-    return await this.prisma.user.create({ data });
+    return await this.prisma.user.create({ data }).then((user) => {
+      return { ...user, password: 'xxxxxxxxxxx' };
+    });
   }
 
   /**
@@ -90,10 +92,17 @@ export class UserService {
   ): Promise<UserWithToken | undefined> {
     const user = await this.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new HttpException(
+        {
+          message: ['User not found'],
+          error: 'Not Found',
+          statusCode: 404,
+        },
+        HttpStatus.NOT_FOUND,
+      );
     }
 
-    if (bcrypt.compareSync(password, user.password as string)) {
+    if (bcrypt.compareSync(password, user.password)) {
       const payload = { sub: user.id, email: user.email };
       return {
         ...user,
@@ -101,7 +110,14 @@ export class UserService {
         token: await this.jwtService.signAsync(payload),
       };
     } else {
-      throw new UnauthorizedException();
+      throw new HttpException(
+        {
+          message: ['Invalid credentials'],
+          error: 'Unauthorized',
+          statusCode: 401,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
   }
 }

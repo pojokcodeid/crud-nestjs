@@ -1,8 +1,9 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
+  HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from './constants';
@@ -14,7 +15,14 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new HttpException(
+        {
+          message: ['Token not found'],
+          error: 'Unauthorized',
+          statusCode: 401,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     try {
       const payload: { sub: number; email: string } =
@@ -23,7 +31,14 @@ export class JwtAuthGuard implements CanActivate {
         });
       request['user'] = payload;
     } catch {
-      throw new UnauthorizedException();
+      throw new HttpException(
+        {
+          message: ['Invalid token'],
+          error: 'Unauthorized',
+          statusCode: 401,
+        },
+        HttpStatus.UNAUTHORIZED,
+      );
     }
     return true;
   }
