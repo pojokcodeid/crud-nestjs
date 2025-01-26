@@ -4,23 +4,21 @@ import {
   Delete,
   Get,
   HttpCode,
-  // HttpException,
-  // HttpStatus,
+  Logger,
   Param,
   ParseIntPipe,
   Post,
   Put,
-  // UsePipes,
-  // ValidationPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from 'src/user/user.dto';
-// import { plainToInstance } from 'class-transformer';
-// import { validateOrReject } from 'class-validator';
 
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private readonly logger: Logger,
+  ) {}
 
   /**
    * Retrieves all user data.
@@ -29,19 +27,27 @@ export class UserController {
   @Get()
   @HttpCode(200)
   async users() {
-    const data = await this.userService.findAll();
-    return {
-      data,
-    };
+    try {
+      const data = await this.userService.findAll();
+      return {
+        data,
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
   @Get('/:id')
   @HttpCode(200)
   async user(@Param('id', ParseIntPipe) id: number) {
-    const data = await this.userService.findById(id);
-    return {
-      data,
-    };
+    try {
+      const data = await this.userService.findById(id);
+      return {
+        data,
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
   /**
@@ -56,10 +62,14 @@ export class UserController {
     // if (user) {
     //   throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     // }
-    const data = await this.userService.create(body);
-    return {
-      data,
-    };
+    try {
+      const data = await this.userService.create(body);
+      return {
+        data,
+      };
+    } catch (error) {
+      this.logger.log(error);
+    }
   }
 
   /**
@@ -74,9 +84,13 @@ export class UserController {
     id: number,
     @Body() body: { email?: string; name?: string },
   ) {
-    return {
-      data: await this.userService.update(id, body),
-    };
+    try {
+      return {
+        data: await this.userService.update(id, body),
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 
   /**
@@ -87,8 +101,12 @@ export class UserController {
   @Delete('/:id')
   @HttpCode(200)
   async delete(@Param('id', ParseIntPipe) id: number) {
-    return {
-      data: await this.userService.delete(id),
-    };
+    try {
+      return {
+        data: await this.userService.delete(id),
+      };
+    } catch (error) {
+      this.logger.error(error);
+    }
   }
 }

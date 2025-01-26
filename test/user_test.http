@@ -13,7 +13,7 @@ Content-Type: application/json
 PUT {{BASE_URL}}/user/6
 Content-Type: application/json
 {
-  "email":"code2@gmail.com",
+  "email":"code@gmail.com",
   "name":"Pojok Code"
 }
 

@@ -27,7 +27,6 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
         SELECT * FROM ${Prisma.raw(table)} WHERE ${Prisma.raw(field)} = ${value}
       `;
       const idUpdated = data[0] as { id: number };
-      console.log(idUpdated);
       if (data.length > 0 && idUpdated.id != parsing.id) {
         return false;
       } else {
