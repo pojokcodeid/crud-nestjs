@@ -4,6 +4,7 @@ Authorization: Bearer {{$global.accessToken}}
 
 ### get user by id
 GET {{BASE_URL}}/user/1
+Authorization: Bearer {{$global.accessToken}}
 
 ### create user
 POST {{BASE_URL}}/user

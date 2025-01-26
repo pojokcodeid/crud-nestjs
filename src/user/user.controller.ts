@@ -11,12 +11,15 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from 'src/user/user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
+import { Request, Response } from 'express';
 
 @Controller('user')
 export class UserController {
@@ -59,14 +62,15 @@ export class UserController {
    */
   @UseGuards(JwtAuthGuard)
   @Get()
-  @HttpCode(200)
-  async users() {
+  // ini contoh jika ingin req res dengan cara express js
+  async users(@Req() req: Request, @Res() res: Response) {
     try {
       const data = await this.userService.findAll();
-      return {
-        data,
-      };
-    } catch (error) {
+      res.status(200).json({
+        data: data,
+      });
+    } catch (error: unknown) {
+      res.status(500).json({ error });
       this.logger.error(error);
     }
   }

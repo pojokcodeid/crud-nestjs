@@ -11,6 +11,12 @@ async function bootstrap() {
       instance: instance,
     }),
   });
+  app.enableCors({
+    origin: true,
+    credentials: true,
+    preflightContinue: false,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  });
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
   Logger.log(`Application is running on: ${await app.getUrl()}`);
