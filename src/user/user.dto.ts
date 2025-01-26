@@ -39,3 +39,13 @@ export class LoginUserDto {
   @IsNotEmpty()
   password: string;
 }
+
+export type UserWithToken = {
+  id: number;
+  name: string | null;
+  email: string;
+  password: string;
+  createtAt: Date;
+  updatedAt: Date;
+  token: string;
+};

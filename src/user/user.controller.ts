@@ -11,10 +11,12 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, LoginUserDto, UpdateUserDto } from 'src/user/user.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtAuthGuard } from 'src/auth/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -55,6 +57,7 @@ export class UserController {
    * Retrieves all user data.
    * @returns A promise that resolves to a list of users.
    */
+  @UseGuards(JwtAuthGuard)
   @Get()
   @HttpCode(200)
   async users() {
@@ -68,6 +71,7 @@ export class UserController {
     }
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('/:id')
   @HttpCode(200)
   async user(@Param('id', ParseIntPipe) id: number) {
@@ -155,30 +159,6 @@ export class UserController {
   @Post('/login')
   @HttpCode(200)
   async login(@Body() body: LoginUserDto) {
-    const user = await this.userService.findByEmail(body.email);
-    if (!user) {
-      throw new HttpException(
-        {
-          message: ['User not found'],
-          error: 'Not Found',
-          statusCode: 404,
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    if (bcrypt.compareSync(body.password, user.password as string)) {
-      return {
-        data: { ...user, password: 'xxxxxxxxxxx' },
-      };
-    } else {
-      throw new HttpException(
-        {
-          message: ['Invalid credentials'],
-          error: 'Unauthorized',
-          statusCode: 401,
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
-    }
+    return await this.userService.verifyUser(body.email, body.password);
   }
 }

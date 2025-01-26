@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserDto, UpdateUserDto } from 'src/user/user.dto';
+import { CreateUserDto, UpdateUserDto, UserWithToken } from 'src/user/user.dto';
 import { User } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {}
 
   /**
    * Retrieves all users from the database.
@@ -77,5 +82,26 @@ export class UserService {
     return await this.prisma.user
       .delete({ where: { id } })
       .then((user) => ({ ...user, password: 'xxxxxxxxxxx' }));
+  }
+
+  async verifyUser(
+    email: string,
+    password: string,
+  ): Promise<UserWithToken | undefined> {
+    const user = await this.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    if (bcrypt.compareSync(password, user.password as string)) {
+      const payload = { sub: user.id, email: user.email };
+      return {
+        ...user,
+        password: 'xxxxxxxxxxx',
+        token: await this.jwtService.signAsync(payload),
+      };
+    } else {
+      throw new UnauthorizedException();
+    }
   }
 }

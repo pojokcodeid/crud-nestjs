@@ -1,5 +1,6 @@
 ### get all users
 GET {{BASE_URL}}/user
+Authorization: Bearer {{$global.accessToken}}
 
 ### get user by id
 GET {{BASE_URL}}/user/1
@@ -32,3 +33,7 @@ Content-Type: application/json
   "email":"code@gmail.com",
   "password":"Pass123"
 }
+
+{{
+  $global.accessToken=JSON.parse(response.body).token;
+}}
