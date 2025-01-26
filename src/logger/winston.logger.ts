@@ -1,5 +1,11 @@
 import { createLogger, format, transports } from 'winston';
+import * as DailyRotateFile from 'winston-daily-rotate-file';
 import 'dotenv/config';
+
+/**
+ * panduann
+ * https://timothy.hashnode.dev/advance-your-nestjs-application-with-winston-logger-a-step-by-step-guide
+ */
 
 const customFormat = format.printf(
   ({
@@ -17,15 +23,15 @@ const customFormat = format.printf(
   },
 );
 
-const options = {
-  file: {
-    filename: './logs/error.log',
-    level: 'error',
-  },
-  console: {
-    level: 'silly',
-  },
-};
+const transport = new DailyRotateFile({
+  filename: './logs/app-%DATE%.log',
+  datePattern: 'YYYY-MM-DD',
+  zippedArchive: true,
+  maxSize: '1m',
+  maxFiles: '14d',
+  level: 'error',
+  handleExceptions: true,
+});
 
 const devLogger = {
   format: format.combine(
@@ -33,7 +39,11 @@ const devLogger = {
     format.errors({ stack: true }),
     customFormat,
   ),
-  transports: [new transports.Console(options.console)],
+  transports: [
+    new transports.Console({
+      level: 'silly',
+    }),
+  ],
 };
 
 const prodLogger = {
@@ -42,8 +52,9 @@ const prodLogger = {
     format.errors({ stack: true }),
     format.json(),
   ),
+
   transports: [
-    new transports.File(options.file),
+    transport,
     new transports.File({
       filename: './logs/combine.log',
       level: 'info',
