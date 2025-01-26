@@ -20,7 +20,10 @@ import { CreateUserDto, LoginUserDto, UpdateUserDto } from 'src/user/user.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtAuthGuard } from 'src/auth/auth.guard';
 import { Request, Response } from 'express';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('User') // Untuk mengelompokkan endpoint di Swagger
+@ApiBearerAuth('access-token') // Menambahkan otorisasi Bearer Token di endpoint ini
 @Controller('user')
 export class UserController {
   constructor(
